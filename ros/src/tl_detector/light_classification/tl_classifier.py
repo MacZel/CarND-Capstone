@@ -2,10 +2,8 @@ import cv2
 import datetime
 import numpy as np
 import tensorflow as tf
-from PIL import {
-    Image,
-    ImageDraw
-}
+from PIL import Image
+from PIL import ImageDraw
 
 from styx_msgs.msg import TrafficLight
 
@@ -25,26 +23,25 @@ def normalize_coords(boxes, img_height, img_width):
     box_coords[:, 3] = boxes[:, 3] * img_width
     return box_coords
 
-COLORS = ['red', 'yellow', 'green']
+COLORS = ["red", "yellow", "green"]
 IS_OUTPUT_IMG = False
 
 def draw_bounding_boxes(img, boxes, classes, scores, color_id, width=2):
     img_draw = ImageDraw.Draw(img)
     for box_i in range(len(boxes)):
         bottom, left, top, right = boxes[box_i, ...]
-        class_i = int(classes[box_i])
         fill = COLORS[color_id]
         img_draw.line([
             (left, top), (left, bottom), (right, bottom), (right, top), (left, top) 
         ], width=width, fill=fill)
         img_draw.rectangle([(left, bottom-20), (right, bottom)], outline=fill, fill=fill)
-        img_draw.text((left, bottom-15), str(scores[class_i]), "black")
+        img_draw.text((left, bottom-15), str(scores[box_i]), "black")
 
 def init_graph(graph_pb):
     g = tf.Graph()
     with g.as_default():
         g_def = tf.GraphDef()
-        with tf.gfile.Open(graph_pb, "rb") as infile:
+        with tf.gfile.GFile(graph_pb, "rb") as infile:
             g_binary = infile.read()
             g_def.ParseFromString(g_binary)
             tf.import_graph_def(g_def, name="")
@@ -77,8 +74,8 @@ class TLClassifier(object):
 
         COLOR_THRESHOLDS = [
             ([0, 100, 80], [10, 255, 255]), # R
-            ([18, 0, 195], [35, 255, 255]), # Y
-            ([35, 200, 60], [70, 255, 255]) # G
+            ([18, 0, 196], [36, 255, 255]), # Y
+            ([36, 202, 59], [71, 255, 255]) # G
         ]
 
         color = TrafficLight.UNKNOWN
@@ -94,7 +91,7 @@ class TLClassifier(object):
         classes = np.squeeze(classes)
         boxes, scores, classes = filter_boxes(CONFIDENCE_CUTOFF, TARGET_CLASS, boxes, scores, classes)
         if len(boxes) > 0:
-            width, height = image.shape[-2::-1]
+            img_width, img_height = image.shape[-2::-1]
             box_coords = normalize_coords(boxes, img_height, img_width)           
             red_yellow_green = [0, 0, 0]
             for coord_i in range(len(box_coords)):

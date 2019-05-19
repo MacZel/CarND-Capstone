@@ -61,7 +61,7 @@ class WaypointUpdater(object):
         prev_coord = self.waypoints_2d[closest_idx - 1]
 
         cl_vect = np.array(closest_coord)
-        prev_vect = np.array(prev.coord)
+        prev_vect = np.array(prev_coord)
         pos_vect = np.array([x, y])
 
         val = np.dot(cl_vect-prev_vect, pos_vect-cl_vect)
@@ -81,7 +81,7 @@ class WaypointUpdater(object):
         farthest_idx = closest_idx + LOOKAHEAD_WPS
         base_waypoints = self.base_lane.waypoints[closest_idx:farthest_idx]
 
-        if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= farthest_idx):
+        if (self.stopline_wp_idx == -1) or (self.stopline_wp_idx >= farthest_idx):
             lane.waypoints = base_waypoints
         else:
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
