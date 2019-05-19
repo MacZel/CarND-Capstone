@@ -23,7 +23,7 @@ as well as to verify your TL classifier.
 '''
 
 LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-UPDATE_RATE = 50
+UPDATE_RATE = 1
 MAX_DECEL = 0.5
 
 

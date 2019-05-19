@@ -1,5 +1,11 @@
 #!/usr/bin/env python
+import cv2
+import datetime
 import rospy
+from scipy.spatial import KDTree
+import tf
+import yaml
+
 from std_msgs.msg import Int32
 from geometry_msgs.msg import PoseStamped, Pose
 from styx_msgs.msg import TrafficLightArray, TrafficLight
@@ -7,12 +13,9 @@ from styx_msgs.msg import Lane
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from light_classification.tl_classifier import TLClassifier
-import tf
-import cv2
-import yaml
-from scipy.spatial import KDTree
 
-STATE_COUNT_THRESHOLD = 3
+STATE_COUNT_THRESHOLD = 1
+TL_CLASSIFICATION_INTERVAL = 200000
 
 
 class TLDetector(object):
@@ -51,6 +54,7 @@ class TLDetector(object):
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
+        self.last_detection = datetime.datetime.now()
 
         self.light_classifier = TLClassifier()
 
@@ -76,6 +80,10 @@ class TLDetector(object):
             msg (Image): image from car-mounted camera
 
         """
+        start_detection = datetime.datetime.now()
+        delta_time = start_detection - self.last_detection
+        if delta_time.microseconds < TL_CLASSIFICATION_INTERVAL:
+            return
         self.has_image = True
         self.camera_image = msg
         light_wp, state = self.process_traffic_lights()
@@ -97,6 +105,7 @@ class TLDetector(object):
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
+        self.last_detection = datetime.datetime.now()
 
     def get_closest_waypoint(self, x, y):
         """Identifies the closest path waypoint to the given position
